@@ -103,18 +103,21 @@ func toJsonByteArray(object interface{}) ([]byte, error) {
 	}
 	return jsonBuffer, nil
 }
-
 func (this *Client) send(method string, url string, body []byte) ([]byte, *http.Response, error) {
+	return sendImpl(method, this.url+url, this.headers, this.credentials, body)
+}
+
+var sendImpl = func(method string, url string, headers map[string]string, credentials *BasicAuthentication, body []byte) ([]byte, *http.Response, error) {
 	httpClient := &http.Client{}
-	request, requestError := http.NewRequest(method, this.url+url, bytes.NewReader(body))
+	request, requestError := http.NewRequest(method, url, bytes.NewReader(body))
 	if requestError != nil {
 		return nil, nil, requestError
 	}
-	for key, value := range this.headers {
+	for key, value := range headers {
 		request.Header.Add(key, value)
 	}
-	if this.credentials != nil {
-		request.SetBasicAuth(this.credentials.Name, this.credentials.Secret)
+	if credentials != nil {
+		request.SetBasicAuth(credentials.Name, credentials.Secret)
 	}
 	response, responseError := httpClient.Do(request)
 	if responseError != nil {

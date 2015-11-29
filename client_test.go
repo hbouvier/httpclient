@@ -1,12 +1,24 @@
 package httpclient
 
 import (
+	"net/http"
 	"testing"
 )
 
 type StringAndInt struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
+}
+
+func TestValideJsonResponse(t *testing.T) {
+	sendImpl = func(method string, url string, headers map[string]string, credentials *BasicAuthentication, body []byte) ([]byte, *http.Response, error) {
+		return []byte("{\"message\":\"Hello World\",\"code\":42}"), &http.Response{StatusCode: 200}, nil
+	}
+	response := StringAndInt{}
+	client := New("http://localhost", nil, nil)
+	if err := client.Get("/index.json", &response); err != nil {
+		t.Fatalf("Expected to recieved a valide json object (%#v)", err)
+	}
 }
 
 func TestToJsonByteArray(t *testing.T) {
